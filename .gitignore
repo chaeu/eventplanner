@@ -1,0 +1,5 @@
+.vscode
+
+.Python
+env
+db.sqlite3

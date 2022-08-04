@@ -1,0 +1,30 @@
+{% extends "main.html" %}
+
+{% block content %}
+
+<h1> Events</h1>
+
+
+<div>
+    <a href="{% url 'create-event' %}">Create Event</a>
+    
+    <hr>
+
+    <h2> Upcoming Events </h2>
+    <div>
+        {% for event in events %}
+            <div>
+                <span>{{event.hose.username}} </span>
+                <a href="{% url 'event' event.id %}">{{event.name}}</a>
+                <br><span>{{event.eventdate}}</span>
+                <p>{{event.description}}</p>
+                <a href="{% url 'update-event' %}">Edit</a>
+                
+                <hr>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock content %}
+
+
