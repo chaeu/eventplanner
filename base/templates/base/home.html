@@ -4,10 +4,16 @@
 
 <h1> Events</h1>
 
-
 <div>
     <a href="{% url 'create-event' %}">Create Event</a>
     
+    <hr>
+    <h2>Next Event</h2>
+    <a href="{% url 'event' nextevent.id %}">{{nextevent.name}} </a><br>
+    {{nextevent.eventdate}} - hosted by {{nextevent.host}}
+    <p>{{event.description}}</p>
+    <a href="{% url 'update-event' nextevent.id %}">Edit</a>
+    <a href="{% url 'delete-event' nextevent.id %}">Delete</a>
     <hr>
 
     <h2> Upcoming Events </h2>
@@ -16,10 +22,25 @@
             <div>
                 <span>{{event.hose.username}} </span>
                 <a href="{% url 'event' event.id %}">{{event.name}}</a>
+                
                 <br><span>{{event.eventdate}}</span>
                 <p>{{event.description}}</p>
-                <a href="{% url 'update-event' %}">Edit</a>
-                
+                <a href="{% url 'update-event' event.id %}">Edit</a>
+                <a href="{% url 'delete-event' event.id %}">Delete</a>
+                <hr>
+            </div>
+        {% endfor %}
+    </div>
+    <h2> Events without a date</h2>
+    <div>
+        {% for event in nodate %}
+            <div>
+                <span>{{event.hose.username}} </span>
+                <a href="{% url 'event' event.id %}">{{event.name}}</a>
+                <br><span>{{event.eventdate}}</span>
+                <p>{{event.description}}</p>
+                <a href="{% url 'update-event' event.id %}">Edit</a>
+                <a href="{% url 'delete-event' event.id %}">Delete</a>
                 <hr>
             </div>
         {% endfor %}
