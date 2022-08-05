@@ -2,4 +2,5 @@
 
 .Python
 env
+.env
 db.sqlite3
