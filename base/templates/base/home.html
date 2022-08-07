@@ -1,51 +1,59 @@
 {% extends "main.html" %}
 
+
 {% block content %}
 
-<h1> Events</h1>
+<style>
+    .home-container {
+        display: grid;
+        grid-template-columns: 1fr 3fr;
+    }
 
-<div>
-    <a href="{% url 'create-event' %}">Create Event</a>
-    
-    <hr>
-    <h2>Next Event</h2>
-    <a href="{% url 'event' nextevent.id %}">{{nextevent.name}} </a><br>
-    {{nextevent.eventdate}} - hosted by {{nextevent.host}}
-    <p>{{event.description}}</p>
-    <a href="{% url 'update-event' nextevent.id %}">Edit</a>
-    <a href="{% url 'delete-event' nextevent.id %}">Delete</a>
-    <hr>
+</style>
 
-    <h2> Upcoming Events </h2>
+<div class="home-container">
     <div>
-        {% for event in events %}
+        
+
+        <h3>Browse Topics</h3>
+        <hr>
+        <div>
+            <a href="{% url 'home' %}">All</a>
+        </div>
+        {% for topic in topics %}
             <div>
-                <span>{{event.hose.username}} </span>
-                <a href="{% url 'event' event.id %}">{{event.name}}</a>
+                <a href="{% url 'home' %}?q={{topic.name}}"> {{topic.name}}</a>
+            </div>
+        {% endfor %}
+
+
+    </div>
+
+    <div>
+        <h5>{{event_count}} events</h5>
+        <a href="{% url 'create-event' %}">Create Event</a>            
+        <div>
+            {% for event in events %}
+            <div>
+                <span>{{event.host.username}} </span>
+                <a href="{% url 'event' event.id %}">{{event.name}}</a>                
+                <br><span>{{event.eventdate}}</span>
+                <p>{{event.description}}</p>
+                {% if request.user == event.host %}
+                    <a href="{% url 'update-event' event.id %}">Edit</a>
+                    <a href="{% url 'delete-event' event.id %}">Delete</a>  
+                    
+                {% endif %}
                 
-                <br><span>{{event.eventdate}}</span>
-                <p>{{event.description}}</p>
-                <a href="{% url 'update-event' event.id %}">Edit</a>
-                <a href="{% url 'delete-event' event.id %}">Delete</a>
                 <hr>
             </div>
-        {% endfor %}
+
+            {% endfor %}
+        </div>
     </div>
-    <h2> Events without a date</h2>
-    <div>
-        {% for event in nodate %}
-            <div>
-                <span>{{event.hose.username}} </span>
-                <a href="{% url 'event' event.id %}">{{event.name}}</a>
-                <br><span>{{event.eventdate}}</span>
-                <p>{{event.description}}</p>
-                <a href="{% url 'update-event' event.id %}">Edit</a>
-                <a href="{% url 'delete-event' event.id %}">Delete</a>
-                <hr>
-            </div>
-        {% endfor %}
-    </div>
+
 </div>
+
 {% endblock content %}
 
 

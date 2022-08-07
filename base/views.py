@@ -1,16 +1,87 @@
 from django.shortcuts import render, redirect
-from .models import Event
+from django.http import HttpResponse
+from django.db.models import Q
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.forms import UserCreationForm
+from .models import Event, Topic
 from .forms import EventForm
+
 # Create your views here.
 
+def loginPage(request):
+    page = "login"
+    if request.user.is_authenticated:
+        return redirect("home")
+
+    if request.method == "POST":
+        username = request.POST.get("username").lower()
+        password = request.POST.get("password")
+
+        try:
+            user = User.objects.get(username=username)
+        except:
+            messages.error(request, "User does not exist")
+        user = authenticate(request, username=username, password=password)
+
+        if user is not None:
+            login(request, user)
+            return redirect("home")
+        else:
+            messages.error(request, "Username or password is incorrect")
+
+    context = {
+        "page":page
+    }
+    return render(request, "base/login_register.html", context)
+
+def logoutUser(request):
+    logout(request)
+    return redirect("home")
+
+def registerPage(request):
+    #page = "register"
+    form = UserCreationForm()
+
+    if request.method == "POST":
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.username = user.username.lower()
+            user.save()
+            login(request, user)
+            return redirect("home")
+        else:
+            messages.error(request, "An error occured during registration, pleasy try again.")
+    return render(request, "base/login_register.html", {"form":form})
+
 def home(request):
-    nextevent = Event.objects.exclude(eventdate=None).first()
-    events = Event.objects.all().exclude(eventdate=None)[1:]
-    eventsnodate = Event.objects.all().filter(eventdate=None)
+    q = request.GET.get("q") if request.GET.get("q") != None else ""
+
+    events = Event.objects.filter(
+        Q(topic__name__icontains=q) |
+        Q(name__icontains=q) |
+        Q(host__username__icontains=q) |
+        Q(description__icontains=q)     
+        )
+    
+
+    
+    #nextevent = Event.objects.exclude(eventdate=None).first()
+    #events = Event.objects.all().exclude(eventdate=None)
+    #eventsnodate = Event.objects.all().filter(eventdate=None)
+
+    topics = Topic.objects.all()
+    event_count = events.count()
     context = {
         "events":events,
-        "nextevent":nextevent,
-        "nodate":eventsnodate,    
+        "topics": topics,
+        "event_count":event_count
+        #"nextevent":nextevent,
+        #"nodate":eventsnodate,
+            
     }
     return render(request, "base/home.html", context)
 
@@ -19,6 +90,7 @@ def event(request, pk):
     context = {"event": event}
     return render(request, "base/event.html", context)
 
+@login_required(login_url="login")
 def createEvent(request):
     form = EventForm()
     
@@ -32,9 +104,13 @@ def createEvent(request):
     context = {"form":form}
     return render(request, "base/event_form.html", context)
 
+@login_required(login_url="login")
 def updateEvent(request, pk):
     event = Event.objects.get(id=pk)
     form = EventForm(instance=event)
+
+    if request.user != event.host:
+        return HttpResponse("You are not allowed to do that")
 
     if request.method == "POST":
         form = EventForm(request.POST, instance=event)
@@ -45,11 +121,15 @@ def updateEvent(request, pk):
     context = {"form":form}
     return render(request, "base/event_form.html", context)
 
-
-
+@login_required(login_url="login")
 def deleteEvent(request, pk):
     event = Event.objects.get(id=pk)
+
+    if request.user != event.host:
+        return HttpResponse("You are not allowed to do that")
+
     if request.method == "POST":
         event.delete()
         return redirect("home")
     return render(request, "base/delete.html", {"obj":event})
+
