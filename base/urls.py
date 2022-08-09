@@ -10,4 +10,5 @@ urlpatterns = [
     path("create-event/", views.createEvent, name="create-event"),
     path("update-event/<str:pk>/", views.updateEvent, name="update-event"),
     path("delete-event/<str:pk>/", views.deleteEvent, name="delete-event"),
+    path("delete-message/<str:pk>/", views.deleteMessage, name="delete-message"),
 ]

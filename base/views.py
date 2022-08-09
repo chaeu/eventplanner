@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserCreationForm
-from .models import Event, Topic
+from .models import Event, Topic, Message
 from .forms import EventForm
 
 # Create your views here.
@@ -67,7 +67,6 @@ def home(request):
         Q(description__icontains=q)     
         )
     
-
     
     #nextevent = Event.objects.exclude(eventdate=None).first()
     #events = Event.objects.all().exclude(eventdate=None)
@@ -87,8 +86,23 @@ def home(request):
 
 def event(request, pk):
     event = Event.objects.get(id=pk)    
-    context = {"event": event}
+    event_messages = event.message_set.all().order_by("-created")
+    participants = event.participants.all()
+    if request.method =="POST":
+        message = Message.objects.create(
+            user=request.user,
+            event=event,
+            body=request.POST.get("body")
+        )
+        event.participants.add(request.user)
+        return redirect("event", pk=event.id)
+    
+    context = {
+        "event": event, 
+        "event_messages": event_messages,
+        "participants": participants}
     return render(request, "base/event.html", context)
+
 
 @login_required(login_url="login")
 def createEvent(request):
@@ -133,3 +147,15 @@ def deleteEvent(request, pk):
         return redirect("home")
     return render(request, "base/delete.html", {"obj":event})
 
+@login_required(login_url="login")
+def deleteMessage(request, pk):
+    message = Message.objects.get(id=pk)
+
+    if request.user != message.user:
+        return HttpResponse("You are not allowed to do that")
+
+    if request.method == "POST":
+        message.delete()
+        
+        redirect("home")
+    return render(request, "base/delete.html", {"obj": message})
