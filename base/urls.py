@@ -7,6 +7,8 @@ urlpatterns = [
     path("register/", views.registerPage, name="register"),
     path("", views.home, name="home"),
     path("event/<str:pk>/", views.event, name="event"), 
+    path("profile/<str:pk>/", views.userProfile, name="user-profile"),
+
     path("create-event/", views.createEvent, name="create-event"),
     path("update-event/<str:pk>/", views.updateEvent, name="update-event"),
     path("delete-event/<str:pk>/", views.deleteEvent, name="delete-event"),

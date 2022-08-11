@@ -74,10 +74,13 @@ def home(request):
 
     topics = Topic.objects.all()
     event_count = events.count()
+    event_messages = Message.objects.all().filter(Q(event__topic__name__icontains=q))
+
     context = {
         "events":events,
         "topics": topics,
-        "event_count":event_count
+        "event_count":event_count,
+        "event_messages": event_messages,
         #"nextevent":nextevent,
         #"nodate":eventsnodate,
             
@@ -86,7 +89,7 @@ def home(request):
 
 def event(request, pk):
     event = Event.objects.get(id=pk)    
-    event_messages = event.message_set.all().order_by("-created")
+    event_messages = event.message_set.all()
     participants = event.participants.all()
     if request.method =="POST":
         message = Message.objects.create(
@@ -103,15 +106,29 @@ def event(request, pk):
         "participants": participants}
     return render(request, "base/event.html", context)
 
+def userProfile(request, pk):
+    user = User.objects.get(id=pk)
+    events = user.event_set.all()
+    event_messages = user.message_set.all()
+    topics = Topic.objects.all()
+    context = {
+        "user": user, 
+        "events": events, 
+        "event_messages": event_messages,
+        "topics": topics,
+        }
+    return render(request, "base/profile.html", context)
 
 @login_required(login_url="login")
-def createEvent(request):
+def createEvent(request):    
     form = EventForm()
     
     if request.method == "POST":
         form = EventForm(request.POST)
         if form.is_valid():
-            form.save()
+            event = form.save(commit=False)
+            #event.host = request.user
+            event.save()
             return redirect("home")
         print(request.POST)
 
