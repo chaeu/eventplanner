@@ -1,31 +1,11 @@
 {% extends "main.html" %}
 
-
 {% block content %}
 
-<style>
-    .home-container {
-        display: grid;
-        grid-template-columns: 1fr 3fr 1fr;
-    }
 
-</style>
-
-<div class="home-container">
-     
-    {% include "base/topics_component.html" %}     
-
-    <div>
-        <h5>{{event_count}} events</h5>
-        <a href="{% url 'create-event' %}">Create Event</a>
-
-        {% include "base/feed_component.html" %}        
-    </div>
-    
-    {% include "base/activity_component.html" %}    
-
-</div>
+{% for event in events %}
+    {% include "base/event_card.html" %}    
+    {{participants}}
+{% endfor %}
 
 {% endblock content %}
-
-

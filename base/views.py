@@ -91,6 +91,8 @@ def event(request, pk):
     event = Event.objects.get(id=pk)    
     event_messages = event.message_set.all()
     participants = event.participants.all()
+    
+
     if request.method =="POST":
         message = Message.objects.create(
             user=request.user,
@@ -103,7 +105,8 @@ def event(request, pk):
     context = {
         "event": event, 
         "event_messages": event_messages,
-        "participants": participants}
+        "participants": participants,        
+        }
     return render(request, "base/event.html", context)
 
 def userProfile(request, pk):
