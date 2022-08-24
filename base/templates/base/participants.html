@@ -1,0 +1,10 @@
+<ul class="list-group list-group-flush"> 
+{% with partCount=event.capacity|stringformat:"s" %}
+    {% with partSlice=":"|add:partCount %}
+             
+        {% for p in event.participants.all|slice:partSlice %}        
+          <li class="list-group-item">{{p.username}}</li>        
+        {% endfor %}
+    {% endwith %}
+{% endwith %}
+</ul>

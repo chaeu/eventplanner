@@ -1,0 +1,84 @@
+
+<div class="col-sm-12">
+    <div class="card" >    
+        
+        
+        <h6 class="card-header text-muted">    
+        @{{event.host}} | {{event.eventdate|date:"l, d.m.Y"}} {{event.eventdate|time:"H:i"}} | in {{event.eventdate|timeuntil}}    
+        </h6>
+        
+        <div class="card-body">
+          <h5 class="card-title"><a href="{% url 'event' event.id %}">{{event.name}} </a></h5>
+          <p class="card-text">{{event.description}}</p>   
+       
+        <div class="row">
+          <div class="col-sm-5">
+            <h6>Participants</h6>
+            <small>
+              <ul class="list-group list-group-numbered"> 
+              {% with partCount=event.capacity|stringformat:"s" %}
+                  {% with partSlice=":"|add:partCount %}
+                    {% with part=event.participants.all|slice:"::-1" %}
+                      {% for p in part|slice:partSlice %}        
+                      <a href="{% url 'user-profile' p.id %}" class="list-group-item">{{p.username}}</a>        
+                      {% endfor %}
+                    {% endwith %}
+                  {% endwith %}
+              {% endwith %}
+              </ul>
+            </small>
+            
+          </div>
+          
+          <div class="col-sm-5">
+            <h6>Waitlist</h6>        
+            <ul class="list-group"> 
+              {% with partCount=event.capacity|stringformat:"s" %}
+                  {% with partSlice=partCount|add:":" %}
+                    {% with part=event.participants.all|slice:"::-1" %}                       
+                        {% for p in part|slice:partSlice %}        
+                        <a href="{% url 'user-profile' p.id %}" class="list-group-item list-group-item-light">{{p.username}}</a>        
+                        {% endfor %}
+                    {% endwith %}
+                  {% endwith %}
+              {% endwith %}
+            </ul>        
+          </div>     
+    
+        </div>
+      </div>
+        
+        <div class="card-body">
+        </div>
+    
+        <div class="card-footer text-muted">
+          <div class="d-flex justify-content-between">
+            
+            <div>
+              {% if event in past_events %}          
+              <form method="POST" action=""> 
+                {% csrf_token %} 
+                <button class="btn btn-primary btn-sm" type="submit" disabled>Join</button>
+                <button class="btn btn-secondary btn-sm" type="submit" disabled>Leave</button>
+              </form>
+              {% else %}
+              <form method="POST" action=""> 
+                {% csrf_token %} 
+                <button class="btn btn-primary btn-sm" type="submit" value={{event.id}} name="join">Join</button>
+                <button class="btn btn-secondary btn-sm" type="submit" value={{event.id}} name="leave">Leave</button>
+              </form>   
+              {% endif %}
+            </div>
+            <div class="align-middle">
+              <small>last update {{event.updated|timesince}} ago </small>
+            </div>
+            
+            
+          </div>
+    
+    
+           
+        </div>
+      
+      </div>
+    </div>

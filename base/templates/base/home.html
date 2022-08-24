@@ -2,10 +2,39 @@
 
 {% block content %}
 
+<div class="container-fluid">    
+    <div class="row">
+        <div class="col-2">
+        {% include "base/topics_component.html" %}
+        </div>
+       
+        <div class="col-7"> 
+        <h3>Upcoming Events</h3><br>
+        <div class="d-grid gap-4">
+        {% for event in upcoming_events %}
+            <div class="row">
+            {% include "base/event_card.html" %}
+            </div>
+        {% endfor %}
+        </div>
 
-{% for event in events %}
-    {% include "base/event_card.html" %}    
-    {{participants}}
-{% endfor %}
+        <h3>Past Events</h3><br>
+        <div class="d-grid gap-4">
+        {% for event in past_events %}
+            <div class="row">
+            {% include "base/event_card.html" %}
+            </div>
+        {% endfor %}
+        </div>
+        </div>
+
+        <div class="col-3">
+            {% include "base/activity_component.html" %}    
+        </div>
+        
+
+    </div>
+
+</div>
 
 {% endblock content %}

@@ -1,12 +1,12 @@
 <div>
     <h3>Browse Topics</h3>
-    <hr>
+    <br>
     <div>
-        <a href="{% url 'home' %}">All</a>
+        <a href="{% url 'home' %}">All</a> {{events.count}}
     </div>
     {% for topic in topics %}
         <div>
-            <a href="{% url 'home' %}?q={{topic.name}}"> {{topic.name}}</a>
+            <a href="{% url 'home' %}?q={{topic.name}}"> {{topic.name}}</a> {{topic.event_set.all.count}}
         </div>
     {% endfor %}
 </div>

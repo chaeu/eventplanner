@@ -1,13 +1,16 @@
-from django.shortcuts import render, redirect
-from django.http import HttpResponse
+from django.shortcuts import render, redirect, reverse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.db.models import Q
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserCreationForm
+from django.utils import timezone
 from .models import Event, Topic, Message
 from .forms import EventForm
+
+
 
 # Create your views here.
 
@@ -58,8 +61,7 @@ def registerPage(request):
     return render(request, "base/login_register.html", {"form":form})
 
 def home(request):
-    q = request.GET.get("q") if request.GET.get("q") != None else ""
-
+    q = request.GET.get("q") if request.GET.get("q") != None else ""    
     events = Event.objects.filter(
         Q(topic__name__icontains=q) |
         Q(name__icontains=q) |
@@ -67,8 +69,11 @@ def home(request):
         Q(description__icontains=q)     
         )
     
+    upcoming_events = events.filter(eventdate__gt=timezone.now()) 
+    past_events = events.filter(eventdate__lt=timezone.now())
     
-    #nextevent = Event.objects.exclude(eventdate=None).first()
+    nextevent = upcoming_events.exclude(eventdate=None).first()
+    #upcoming_events = upcoming_events[1:]
     #events = Event.objects.all().exclude(eventdate=None)
     #eventsnodate = Event.objects.all().filter(eventdate=None)
 
@@ -76,14 +81,26 @@ def home(request):
     event_count = events.count()
     event_messages = Message.objects.all().filter(Q(event__topic__name__icontains=q))
 
+    if request.method == "POST" and "join" in request.POST:
+        event = Event.objects.get(id=int(request.POST["join"]))
+        if event.eventdate > timezone.now():
+            event.participants.add(request.user)
+            return redirect(reverse("home") + "?q="+ q)
+    elif request.method == "POST" and "leave" in request.POST:   
+        event = Event.objects.get(id=int(request.POST["leave"]))        
+        if event.eventdate > timezone.now():
+            event.participants.remove(request.user)
+            return redirect(reverse("home") + "?q="+q)
+
     context = {
         "events":events,
+        "upcoming_events": upcoming_events,
+        "past_events": past_events,
         "topics": topics,
         "event_count":event_count,
         "event_messages": event_messages,
-        #"nextevent":nextevent,
-        #"nodate":eventsnodate,
-            
+        "nextevent":nextevent,
+        #"nodate":eventsnodate,            
     }
     return render(request, "base/home.html", context)
 
@@ -91,21 +108,22 @@ def event(request, pk):
     event = Event.objects.get(id=pk)    
     event_messages = event.message_set.all()
     participants = event.participants.all()
-    
+    capacity = event.capacity
 
     if request.method =="POST":
-        message = Message.objects.create(
+        """message = Message.objects.create(
             user=request.user,
             event=event,
             body=request.POST.get("body")
-        )
+        )"""
         event.participants.add(request.user)
         return redirect("event", pk=event.id)
     
     context = {
         "event": event, 
         "event_messages": event_messages,
-        "participants": participants,        
+        "participants": participants,      
+        "capacity": capacity,  
         }
     return render(request, "base/event.html", context)
 
@@ -175,7 +193,7 @@ def deleteMessage(request, pk):
         return HttpResponse("You are not allowed to do that")
 
     if request.method == "POST":
-        message.delete()
-        
-        redirect("home")
+        message.delete()        
+        return redirect("home")
+
     return render(request, "base/delete.html", {"obj": message})
